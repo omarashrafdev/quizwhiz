@@ -9,17 +9,29 @@
 </head>
 
 <body>
-    <nav class="flex flex-row justify-between">
-        <div class="flex">
-            <h1>QuizWhiz</h1>
+    <nav class="flex flex-row justify-between h-14 items-center px-4 bg-slate-50">
+        <div class="flex space-x-4">
+            <h1 class="text-blue-950">QuizWhiz</h1>
             <p><a href="">About Us</a></p>
         </div>
 
-        <div class="flex">
-            <p><a href="">Login</a></p>
-            <p><a href="">Register</a></p>
+        <div class="flex space-x-4">
+            <p class="bg-blue-100 text-blue-800 px-4 py-2 rounded-md"><a id="login-page" href="">Login</a></p>
+            <p class="bg-blue-800 text-white px-4 py-2 rounded-md"><a id="register-page" href="">Register</a></p>
         </div>
     </nav>
+
+    <header class="bg-blue-950 text-center text-white py-10">
+        <h1 class="text-6xl">
+            Free online <span class="text-cyan-500">quiz maker</span>
+        </h1>
+        <p>Make a quiz with different question types to engage students in a classroom, train employees at work, or play
+            trivia with friends.</p>
+        <p><a href="" class="bg-white text-blue-950 px-4 py-2 rounded">Create a quiz ></a></p>
+        <p>✅ Used by 50 million+ people around the world</p>
+    </header>
+
+    <script src="assets/js/index.js"></script>
 </body>
 
 </html>
