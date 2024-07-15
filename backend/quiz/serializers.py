@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser, Quiz
+from .models import CustomUser, Quiz, UserQuiz
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -51,3 +51,10 @@ class QuizListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         fields = ['id', 'title', 'description', 'start_time', 'duration']
+
+
+class UserQuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserQuiz
+        fields = ['user', 'quiz', 'joined_at', 'score', 'completed', 'started_at', 'finished_at']
+        read_only_fields = ['user', 'joined_at']

@@ -34,14 +34,19 @@ class QuizJoinView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        id = request.data.get('id')
+        quiz_id = request.data.get('quiz_id')
         password = request.data.get('password')
         try:
-            quiz = Quiz.objects.get(id=id)
+            quiz = Quiz.objects.get(id=quiz_id)
             if quiz.password and quiz.password != password:
                 return Response({'error': 'Incorrect password'}, status=status.HTTP_403_FORBIDDEN)
-            # Logic for adding the user to the quiz participants
-            return Response({'message': 'Successfully joined the quiz'}, status=status.HTTP_200_OK)
+
+            user_quiz, created = UserQuiz.objects.get_or_create(user=request.user, quiz=quiz)
+
+            if created:
+                return Response({'message': 'Successfully joined the quiz'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Already joined this quiz'}, status=status.HTTP_200_OK)
         except Quiz.DoesNotExist:
             return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
 
