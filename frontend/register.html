@@ -8,7 +8,7 @@
     <title>Quizwhiz - Register</title>
 </head>
 
-<body class="bg-slate-50 flex justify-center items-center h-screen">
+<body class="bg-slate-100 flex justify-center items-center h-screen">
     <div class="w-full max-w-md bg-white p-8 rounded shadow-md">
         <h1 class="text-2xl font-bold mb-4 text-blue-950">Register for QuizWhiz</h1>
         <p class="mb-8">Please fill in the form below to create an account.</p>
@@ -43,6 +43,16 @@
                 <input type="password" id="confirm-password" name="confirm-password" required
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 <p id="confirm-password-error" class="text-red-500 text-sm hidden"></p>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" id="agree" name="agree"
+                        class="h-4 w-4 text-blue-950 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="agree" class="ml-2 block text-sm text-gray-900">Agree to terms of QuizWhiz</label>
+                </div>
+                <div>
+                    <p class="text-sm text-right text-blue-950"><a href="login.html">Have an account</a></p>
+                </div>
             </div>
             <div>
                 <button type="submit"

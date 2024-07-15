@@ -8,7 +8,7 @@
     <title>Quizwhiz - Login</title>
 </head>
 
-<body class="bg-slate-50 flex justify-center items-center h-screen">
+<body class="bg-slate-100 flex justify-center items-center h-screen">
     <div class="w-full max-w-md bg-white p-8 rounded shadow-md">
         <h1 class="text-2xl font-bold mb-4 text-blue-950">Login to QuizWhiz</h1>
         <p class="mb-8">Please enter your email and password to login.</p>
@@ -16,22 +16,27 @@
         <form id="login-form" class="space-y-4">
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input value="omar.ashraf.dev@gmail.com" type="email" id="email" name="email" required
+                <input type="email" id="email" name="email" required
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input value="Oo@4122002" type="password" id="password" name="password" required
+                <input type="password" id="password" name="password" required
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
-            <div class="flex items-center">
-                <input type="checkbox" id="remember-me" name="remember-me"
-                    class="h-4 w-4 text-blue-950 focus:ring-blue-500 border-gray-300 rounded">
-                <label for="remember-me" class="ml-2 block text-sm text-gray-900">Remember me</label>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" name="remember-me"
+                        class="h-4 w-4 text-blue-950 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-900">Remember me</label>
+                </div>
+                <div>
+                    <p class="text-sm text-right text-blue-950"><a href="register.html">Create new account</a></p>
+                </div>
             </div>
             <div>
                 <button type="submit"
-                    class="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Login</button>
+                    class="w-full py-2 px-4 bg-blue-950 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Login</button>
             </div>
             <p id="error-message" class="text-red-500 text-sm mt-2 hidden">Invalid email or password. Please try again.
             </p>
