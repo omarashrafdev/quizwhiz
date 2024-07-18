@@ -5,7 +5,7 @@ from .choices import question_type
 
 
 class CustomUser(AbstractUser):
-    name = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
 
     USERNAME_FIELD = 'email'
