@@ -35,10 +35,20 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-class QuizCreateView(generics.CreateAPIView):
+class QuizCreateView(generics.ListCreateAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class QuizDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Quiz.objects.filter(creator=self.request.user)
+
 
 
 class QuizJoinView(APIView):
@@ -78,12 +88,3 @@ class TakenQuizzesView(generics.ListAPIView):
         # Assuming there's a model to track taken quizzes
         taken_quizzes = UserQuiz.objects.filter(user=self.request.user).values_list('quiz', flat=True)
         return Quiz.objects.filter(id__in=taken_quizzes)
-
-
-class QuizDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Quiz.objects.all()
-    serializer_class = QuizSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Quiz.objects.filter(creator=self.request.user)
