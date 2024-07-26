@@ -1,7 +1,9 @@
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 from django.db import models
 from django.conf import settings
 from .choices import question_type
+from .utils import default_expiration, generate_invitation_code
 
 
 class CustomUser(AbstractUser):
@@ -56,3 +58,17 @@ class UserQuiz(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.quiz.title}"
+    
+
+class QuizInvitation(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    code = models.CharField(max_length=8, unique=True, default=generate_invitation_code)
+    expires_at = models.DateTimeField(default=default_expiration)
+    max_joins = models.IntegerField(default=1)
+    join_count = models.IntegerField(default=0)
+
+    def is_valid(self):
+        return self.join_count < self.max_joins and timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"{self.quiz.title} - {self.code}"

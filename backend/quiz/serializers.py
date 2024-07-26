@@ -1,6 +1,8 @@
+from datetime import timedelta
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Choice, CustomUser, Question, Quiz, UserQuiz
+from .models import Choice, CustomUser, Question, Quiz, QuizInvitation, UserQuiz
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -78,3 +80,20 @@ class UserQuizSerializer(serializers.ModelSerializer):
         model = UserQuiz
         fields = ['user', 'quiz', 'joined_at', 'score', 'completed', 'started_at', 'finished_at']
         read_only_fields = ['user', 'joined_at']
+
+
+class QuizInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizInvitation
+        fields = ['quiz', 'code', 'expires_at', 'max_joins', 'join_count']
+        read_only_fields = ['code', 'join_count', 'quiz']
+
+    def validate_expires_at(self, value):
+        if value <= timezone.now():
+            raise serializers.ValidationError("Expiration date must be in the future.")
+        return value
+
+    def create(self, validated_data):
+        if 'expires_at' not in validated_data:
+            validated_data['expires_at'] = timezone.now() + timedelta(days=7)
+        return super().create(validated_data)

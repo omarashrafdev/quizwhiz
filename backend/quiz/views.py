@@ -2,8 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import Choice, CustomUser, Question, Quiz, UserQuiz
-from .serializers import ChoiceSerializer, QuestionSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserSerializer, QuizSerializer
+from .models import Choice, CustomUser, Question, Quiz, QuizInvitation, UserQuiz
+from .serializers import ChoiceSerializer, QuestionSerializer, QuizInvitationSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserSerializer, QuizSerializer
 from .permissions import IsCreator
 
 
@@ -96,25 +96,42 @@ class ChoiceDetailsView(generics.RetrieveUpdateDestroyAPIView):
         return Choice.objects.filter(question__id=question_id, question__quiz__creator=self.request.user)
 
 
-class QuizJoinView(APIView):
+class CreateQuizInvitationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        quiz_id = request.data.get('quiz_id')
-        password = request.data.get('password')
+    def post(self, request, quiz_id):
         try:
             quiz = Quiz.objects.get(id=quiz_id)
-            if quiz.password and quiz.password != password:
-                return Response({'error': 'Incorrect password'}, status=status.HTTP_403_FORBIDDEN)
+            if quiz.creator != request.user:
+                return Response({'error': 'Only the quiz creator can create invitations'}, status=status.HTTP_403_FORBIDDEN)
 
-            user_quiz, created = UserQuiz.objects.get_or_create(user=request.user, quiz=quiz)
+            serializer = QuizInvitationSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(quiz=quiz)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Quiz.DoesNotExist:
+            return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
 
+
+class JoinQuizWithInvitationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, code):
+        try:
+            invitation = QuizInvitation.objects.get(code=code)
+            if not invitation.is_valid():
+                return Response({'error': 'Invitation is not valid or has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_quiz, created = UserQuiz.objects.get_or_create(user=request.user, quiz=invitation.quiz)
             if created:
+                invitation.join_count += 1
+                invitation.save()
                 return Response({'message': 'Successfully joined the quiz'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'Already joined this quiz'}, status=status.HTTP_200_OK)
-        except Quiz.DoesNotExist:
-            return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+        except QuizInvitation.DoesNotExist:
+            return Response({'error': 'Invalid invitation code'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CreatedQuizzesView(generics.ListAPIView):
