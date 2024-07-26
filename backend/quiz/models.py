@@ -33,10 +33,16 @@ class Question(models.Model):
     type = models.CharField(max_length=9, choices=question_type)
     correct_choice = models.ForeignKey('Choice', on_delete=models.CASCADE, related_name='correct_choice', null=True, blank=True)
 
+    def __str__(self):
+        return self.content
+
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE)
     content = models.TextField()
+
+    def __str__(self):
+        return self.content
 
 
 class UserQuiz(models.Model):

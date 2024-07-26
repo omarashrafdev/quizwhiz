@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser, Quiz, UserQuiz
+from .models import Choice, CustomUser, Question, Quiz, UserQuiz
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -41,10 +41,24 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Choice
+        fields = ['id', 'content']
+
+class QuestionSerializer(serializers.ModelSerializer):
+    choices = ChoiceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ['id', 'quiz', 'content', 'type', 'correct_choice', 'choices']
+
 class QuizSerializer(serializers.ModelSerializer):
+    questions = QuestionSerializer(many=True, read_only=True)
+
     class Meta:
         model = Quiz
-        fields = ['id', 'title', 'description', 'password', 'creator', 'start_time', 'duration']
+        fields = ['id', 'title', 'description', 'password', 'creator', 'start_time', 'duration', 'questions']
         read_only_fields = ['creator']
 
     def create(self, validated_data):
@@ -52,7 +66,6 @@ class QuizSerializer(serializers.ModelSerializer):
         user = request.user
         validated_data['creator'] = user
         return super().create(validated_data)
-
 
 class QuizListSerializer(serializers.ModelSerializer):
     class Meta:

@@ -2,8 +2,9 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, Quiz, UserQuiz
-from .serializers import QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserSerializer, QuizSerializer
+from .models import Choice, CustomUser, Question, Quiz, UserQuiz
+from .serializers import ChoiceSerializer, QuestionSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserSerializer, QuizSerializer
+from .permissions import IsCreator
 
 
 class RegisterView(generics.CreateAPIView):
@@ -40,15 +41,59 @@ class QuizCreateView(generics.ListCreateAPIView):
     serializer_class = QuizSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
 class QuizDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsCreator]
 
     def get_queryset(self):
         return Quiz.objects.filter(creator=self.request.user)
 
+class QuestionView(generics.ListCreateAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCreator]
+
+    def get_queryset(self):
+        quiz_id = self.kwargs['quiz_id']
+        return Question.objects.filter(quiz__id=quiz_id, quiz__creator=self.request.user)
+
+    def perform_create(self, serializer):
+        quiz_id = self.kwargs['quiz_id']
+        quiz = Quiz.objects.get(id=quiz_id, creator=self.request.user)
+        serializer.save(quiz=quiz)
+
+class QuestionDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCreator]
+
+    def get_queryset(self):
+        quiz_id = self.kwargs['quiz_id']
+        return Question.objects.filter(quiz__id=quiz_id, quiz__creator=self.request.user)
+
+class ChoiceView(generics.ListCreateAPIView):
+    serializer_class = ChoiceSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCreator]
+
+    def get_queryset(self):
+        question_id = self.kwargs['question_id']
+        return Choice.objects.filter(question__id=question_id)
+
+    def perform_create(self, serializer):
+        question_id = self.kwargs['question_id']
+        question = Question.objects.get(id=question_id)
+        serializer.save(question=question)
+
+
+class ChoiceDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Choice.objects.all()
+    serializer_class = ChoiceSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCreator]
+
+    def get_queryset(self):
+        question_id = self.kwargs['question_id']
+        return Choice.objects.filter(question__id=question_id, question__quiz__creator=self.request.user)
 
 
 class QuizJoinView(APIView):
