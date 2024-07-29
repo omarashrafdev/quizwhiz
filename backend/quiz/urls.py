@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import ChoiceDetailsView, ChoiceView, CreateQuizInvitationView, CreatedQuizzesView, JoinQuizWithInvitationView, QuestionDetailsView, QuestionView, QuizCreateView, QuizDetailView, RegisterView, CustomTokenObtainPairView, TakenQuizzesView, UserProfileView, QuizJoinView
+from .views import ChoiceDetailsView, ChoiceView, CreateQuizInvitationView, CreatedQuizzesView, JoinQuizWithInvitationView, QuestionDetailsView, QuestionView, QuizCreateView, QuizDetailView, RegisterView, CustomTokenObtainPairView, SubmitAnswerView, TakenQuizzesView, UserProfileView, UserQuizzesView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('profile/', UserProfileView.as_view(), name='profile'),
+    path('user/quizzes/', UserQuizzesView.as_view(), name='user-quizzes'),
     
     path('quiz/create/', QuizCreateView.as_view(), name='quiz-create'),
     path('quiz/<int:pk>/', QuizDetailView.as_view(), name='quiz-detail'),
@@ -17,6 +18,8 @@ urlpatterns = [
 
     path('quiz/<int:quiz_id>/create-invitation/', CreateQuizInvitationView.as_view(), name='create-quiz-invitation'),
     path('quiz/join/<str:code>/', JoinQuizWithInvitationView.as_view(), name='join-quiz-invitation'),
+
+    path('quiz/<int:quiz_id>/submit-answer/', SubmitAnswerView.as_view(), name='submit-answer'),
     
     path('quiz/created/', CreatedQuizzesView.as_view(), name='created-quizzes'),
     path('quiz/taken/', TakenQuizzesView.as_view(), name='taken-quizzes'),

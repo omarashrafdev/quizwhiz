@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Choice, CustomUser, Question, Quiz, QuizInvitation, UserQuiz
-from .serializers import ChoiceSerializer, QuestionSerializer, QuizInvitationSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserSerializer, QuizSerializer
+from .serializers import AnswerSerializer, ChoiceSerializer, QuestionSerializer, QuizInvitationSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserQuizSerializer, UserSerializer, QuizSerializer
 from .permissions import IsCreator
 
 
@@ -134,6 +134,47 @@ class JoinQuizWithInvitationView(APIView):
             return Response({'error': 'Invalid invitation code'}, status=status.HTTP_404_NOT_FOUND)
 
 
+class SubmitAnswerView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, quiz_id):
+        try:
+            quiz = Quiz.objects.get(id=quiz_id)
+        except Quiz.DoesNotExist:
+            return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            question = Question.objects.get(id=request.data.get('question'), quiz=quiz)
+        except Question.DoesNotExist:
+            return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            choice = Choice.objects.get(id=request.data.get('choice'), question=question)
+        except Choice.DoesNotExist:
+            return Response({'error': 'Choice not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        answer_data = {
+            'user': request.user.id,
+            'quiz': quiz.id,
+            'question': question.id,
+            'choice': choice.id,
+        }
+
+        serializer = AnswerSerializer(data=answer_data, context={'request': request})
+        if serializer.is_valid():
+            answer_instance = serializer.save()
+            # Check if the answer is correct for MCQs
+            if question.type == 'MCQ' and answer_instance.answer == str(question.correct_choice.id):
+                answer_instance.is_correct = True
+            else:
+                answer_instance.is_correct = False
+            answer_instance.save()
+
+            return Response({'message': 'Answer submitted successfully', 'is_correct': answer_instance.is_correct}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class CreatedQuizzesView(generics.ListAPIView):
     serializer_class = QuizListSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -150,3 +191,28 @@ class TakenQuizzesView(generics.ListAPIView):
         # Assuming there's a model to track taken quizzes
         taken_quizzes = UserQuiz.objects.filter(user=self.request.user).values_list('quiz', flat=True)
         return Quiz.objects.filter(id__in=taken_quizzes)
+
+
+
+class UserQuizzesView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserQuizSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        created_quizzes = Quiz.objects.filter(creator=user)
+        participated_quizzes = UserQuiz.objects.filter(user=user)
+        return {
+            'created': created_quizzes,
+            'participated': participated_quizzes
+        }
+
+    def list(self, request, *args, **kwargs):
+        response = {}
+        created_quizzes = self.get_queryset()['created']
+        participated_quizzes = self.get_queryset()['participated']
+
+        response['created'] = QuizSerializer(created_quizzes, many=True).data
+        response['participated'] = UserQuizSerializer(participated_quizzes, many=True).data
+
+        return Response(response)

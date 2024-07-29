@@ -58,6 +58,17 @@ class UserQuiz(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.quiz.title}"
+
+
+class Answer(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE, null=True, blank=True)
+    is_correct = models.BooleanField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.quiz.title} - {self.question.content}"
     
 
 class QuizInvitation(models.Model):
