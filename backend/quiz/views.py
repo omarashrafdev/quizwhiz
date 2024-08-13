@@ -147,7 +147,6 @@ class QuizSubmissionView(APIView):
 
         try:
             answer = Answer.objects.get(submission=submission.id, question=question.id)
-            print(answer)
             if answer:
                 return Response({'error': 'Question is already answered'}, status=status.HTTP_409_CONFLICT)
         except Answer.DoesNotExist:
