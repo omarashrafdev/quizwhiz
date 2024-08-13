@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import Choice, CustomUser, Question, Quiz, QuizSubmission
+from .models import Answer, Choice, CustomUser, Question, Quiz, QuizSubmission
 from .serializers import AnswerSerializer, ChoiceSerializer, QuestionSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, QuizSubmissionSerializer, UserSerializer, QuizSerializer
 from .permissions import IsCreator
 
@@ -145,18 +145,24 @@ class QuizSubmissionView(APIView):
             'choice': choice.id,
         }
 
-        serializer = AnswerSerializer(data=answer_data, context={'request': request})
-        if serializer.is_valid():
-            answer_instance = serializer.save()
-            # Check if the answer is correct for MCQs
-            if question.type == 'MCQ' and answer_instance.choice == str(question.correct_choice.id):
-                answer_instance.is_correct = True
-            else:
-                answer_instance.is_correct = False
-            answer_instance.save()
+        try:
+            answer = Answer.objects.get(submission=submission.id, question=question.id)
+            print(answer)
+            if answer:
+                return Response({'error': 'Question is already answered'}, status=status.HTTP_409_CONFLICT)
+        except Answer.DoesNotExist:
+            serializer = AnswerSerializer(data=answer_data, context={'request': request})
+            if serializer.is_valid():
+                answer_instance = serializer.save()
+                # Check if the answer is correct for MCQs
+                if question.type == 'mcq' and answer_instance.choice.id == question.correct_choice.id:
+                    answer_instance.is_correct = True
+                else:
+                    answer_instance.is_correct = False
+                answer_instance.save()
 
-            return Response({'message': 'Submitted successfully', 'is_correct': answer_instance.is_correct}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Submitted successfully', 'is_correct': answer_instance.is_correct}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

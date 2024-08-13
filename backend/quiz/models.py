@@ -75,5 +75,5 @@ class Answer(models.Model):
     is_correct = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.quiz.title} - {self.question.content}"
+        return f"{self.submission.user.email} - {self.submission.quiz.title} - {self.question.content}"
     
