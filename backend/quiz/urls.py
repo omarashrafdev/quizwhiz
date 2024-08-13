@@ -1,25 +1,24 @@
 from django.urls import path
-from .views import ChoiceDetailsView, ChoiceView, CreateQuizInvitationView, CreatedQuizzesView, JoinQuizWithInvitationView, QuestionDetailsView, QuestionView, QuizCreateView, QuizDetailView, RegisterView, CustomTokenObtainPairView, SubmitAnswerView, TakenQuizzesView, UserProfileView, UserQuizzesView
+from .views import ChoiceDetailsView, ChoiceView, CreatedQuizzesView, JoinQuizView, QuestionDetailsView, QuestionView, QuizCreateView, QuizDetailView, RegisterView, CustomTokenObtainPairView, QuizSubmissionView, TakenQuizzesView, UserProfileView, QuizSubmissionGetView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('profile/', UserProfileView.as_view(), name='profile'),
-    path('user/quizzes/', UserQuizzesView.as_view(), name='user-quizzes'),
+    path('user/quizzes/', QuizSubmissionGetView.as_view(), name='user-quizzes'),
     
     path('quiz/create/', QuizCreateView.as_view(), name='quiz-create'),
-    path('quiz/<int:pk>/', QuizDetailView.as_view(), name='quiz-detail'),
+    path('quiz/<uuid:pk>/', QuizDetailView.as_view(), name='quiz-detail'),
 
-    path('quiz/<int:quiz_id>/question/', QuestionView.as_view(), name='question-list-create'),
-    path('quiz/<int:quiz_id>/question/<int:pk>/', QuestionDetailsView.as_view(), name='question-detail'),
+    path('quiz/<uuid:quiz_id>/question/', QuestionView.as_view(), name='question-list-create'),
+    path('quiz/<uuid:quiz_id>/question/<int:pk>/', QuestionDetailsView.as_view(), name='question-detail'),
     
     path('question/<int:question_id>/choice/', ChoiceView.as_view(), name='choice-list-create'),
     path('question/<int:question_id>/choice/<int:pk>/', ChoiceDetailsView.as_view(), name='choice-detail'),
 
-    path('quiz/<int:quiz_id>/create-invitation/', CreateQuizInvitationView.as_view(), name='create-quiz-invitation'),
-    path('quiz/join/<str:code>/', JoinQuizWithInvitationView.as_view(), name='join-quiz-invitation'),
+    path('quiz/<uuid:quiz_id>/join/', JoinQuizView.as_view(), name='join-quiz'),
 
-    path('quiz/<int:quiz_id>/submit-answer/', SubmitAnswerView.as_view(), name='submit-answer'),
+    path('quiz/<uuid:quiz_id>/submit/<uuid:submission_id>/', QuizSubmissionView.as_view(), name='submit-answer'),
     
     path('quiz/created/', CreatedQuizzesView.as_view(), name='created-quizzes'),
     path('quiz/taken/', TakenQuizzesView.as_view(), name='taken-quizzes'),

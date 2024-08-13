@@ -2,8 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import Choice, CustomUser, Question, Quiz, QuizInvitation, UserQuiz
-from .serializers import AnswerSerializer, ChoiceSerializer, QuestionSerializer, QuizInvitationSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, UserQuizSerializer, UserSerializer, QuizSerializer
+from .models import Choice, CustomUser, Question, Quiz, QuizSubmission
+from .serializers import AnswerSerializer, ChoiceSerializer, QuestionSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, QuizSubmissionSerializer, UserSerializer, QuizSerializer
 from .permissions import IsCreator
 
 
@@ -96,55 +96,41 @@ class ChoiceDetailsView(generics.RetrieveUpdateDestroyAPIView):
         return Choice.objects.filter(question__id=question_id, question__quiz__creator=self.request.user)
 
 
-class CreateQuizInvitationView(APIView):
+class JoinQuizView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, quiz_id):
         try:
             quiz = Quiz.objects.get(id=quiz_id)
-            if quiz.creator != request.user:
-                return Response({'error': 'Only the quiz creator can create invitations'}, status=status.HTTP_403_FORBIDDEN)
 
-            serializer = QuizInvitationSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(quiz=quiz)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Quiz.DoesNotExist:
-            return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+            if quiz.password:
+                password = request.data.get('password')
+                print(password)
+                if not password:
+                    return Response({'error': 'Quiz password is required'}, status=status.HTTP_403_FORBIDDEN)
+                if quiz.password != password:
+                    return Response({'error': 'Invalid password'}, status=status.HTTP_403_FORBIDDEN)
 
-
-class JoinQuizWithInvitationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, code):
-        try:
-            invitation = QuizInvitation.objects.get(code=code)
-            if not invitation.is_valid():
-                return Response({'error': 'Invitation is not valid or has expired'}, status=status.HTTP_400_BAD_REQUEST)
-
-            user_quiz, created = UserQuiz.objects.get_or_create(user=request.user, quiz=invitation.quiz)
+            quiz_submission, created = QuizSubmission.objects.get_or_create(user=request.user, quiz=quiz)
             if created:
-                invitation.join_count += 1
-                invitation.save()
                 return Response({'message': 'Successfully joined the quiz'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'Already joined this quiz'}, status=status.HTTP_200_OK)
-        except QuizInvitation.DoesNotExist:
-            return Response({'error': 'Invalid invitation code'}, status=status.HTTP_404_NOT_FOUND)
+        except Quiz.DoesNotExist:
+            return Response({'error': 'Invalid invitation link'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class SubmitAnswerView(APIView):
+class QuizSubmissionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, quiz_id):
+    def post(self, request, quiz_id, submission_id):
         try:
-            quiz = Quiz.objects.get(id=quiz_id)
-        except Quiz.DoesNotExist:
-            return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+            submission = QuizSubmission.objects.get(id=submission_id, quiz=quiz_id, user=request.user)
+        except QuizSubmission.DoesNotExist:
+            return Response({'error': 'You have not joined this quiz or invalid link.'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            question = Question.objects.get(id=request.data.get('question'), quiz=quiz)
+            question = Question.objects.get(id=request.data.get('question'), quiz=quiz_id)
         except Question.DoesNotExist:
             return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
         
@@ -154,8 +140,7 @@ class SubmitAnswerView(APIView):
             return Response({'error': 'Choice not found'}, status=status.HTTP_404_NOT_FOUND)
 
         answer_data = {
-            'user': request.user.id,
-            'quiz': quiz.id,
+            'submission': submission.id,
             'question': question.id,
             'choice': choice.id,
         }
@@ -164,13 +149,13 @@ class SubmitAnswerView(APIView):
         if serializer.is_valid():
             answer_instance = serializer.save()
             # Check if the answer is correct for MCQs
-            if question.type == 'MCQ' and answer_instance.answer == str(question.correct_choice.id):
+            if question.type == 'MCQ' and answer_instance.choice == str(question.correct_choice.id):
                 answer_instance.is_correct = True
             else:
                 answer_instance.is_correct = False
             answer_instance.save()
 
-            return Response({'message': 'Answer submitted successfully', 'is_correct': answer_instance.is_correct}, status=status.HTTP_200_OK)
+            return Response({'message': 'Submitted successfully', 'is_correct': answer_instance.is_correct}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -189,19 +174,19 @@ class TakenQuizzesView(generics.ListAPIView):
 
     def get_queryset(self):
         # Assuming there's a model to track taken quizzes
-        taken_quizzes = UserQuiz.objects.filter(user=self.request.user).values_list('quiz', flat=True)
+        taken_quizzes = QuizSubmission.objects.filter(user=self.request.user).values_list('quiz', flat=True)
         return Quiz.objects.filter(id__in=taken_quizzes)
 
 
 
-class UserQuizzesView(generics.ListAPIView):
+class QuizSubmissionGetView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserQuizSerializer
+    serializer_class = QuizSubmissionSerializer
 
     def get_queryset(self):
         user = self.request.user
         created_quizzes = Quiz.objects.filter(creator=user)
-        participated_quizzes = UserQuiz.objects.filter(user=user)
+        participated_quizzes = QuizSubmission.objects.filter(user=user)
         return {
             'created': created_quizzes,
             'participated': participated_quizzes
@@ -213,6 +198,6 @@ class UserQuizzesView(generics.ListAPIView):
         participated_quizzes = self.get_queryset()['participated']
 
         response['created'] = QuizSerializer(created_quizzes, many=True).data
-        response['participated'] = UserQuizSerializer(participated_quizzes, many=True).data
+        response['participated'] = QuizSubmissionSerializer(participated_quizzes, many=True).data
 
         return Response(response)

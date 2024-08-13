@@ -2,7 +2,7 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Answer, Choice, CustomUser, Question, Quiz, QuizInvitation, UserQuiz
+from .models import Answer, Choice, CustomUser, Question, Quiz, QuizSubmission
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -54,6 +54,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ['id', 'quiz', 'content', 'type', 'correct_choice', 'choices']
+        read_only_fields = ['quiz']
 
 class QuizSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
@@ -75,38 +76,22 @@ class QuizListSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'start_time', 'duration']
 
 
-class UserQuizSerializer(serializers.ModelSerializer):
+class QuizSubmissionSerializer(serializers.ModelSerializer):
     quiz_title = serializers.CharField(source='quiz.title', read_only=True)
+    quiz = QuizSerializer(read_only=True)
 
     class Meta:
-        model = UserQuiz
-        fields = ['user', 'quiz', 'quiz_title', 'joined_at', 'score', 'completed', 'started_at', 'finished_at']
-        read_only_fields = ['user', 'joined_at']
-
-
-class QuizInvitationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = QuizInvitation
-        fields = ['quiz', 'code', 'expires_at', 'max_joins', 'join_count']
-        read_only_fields = ['code', 'join_count', 'quiz']
-
-    def validate_expires_at(self, value):
-        if value <= timezone.now():
-            raise serializers.ValidationError("Expiration date must be in the future.")
-        return value
-
-    def create(self, validated_data):
-        if 'expires_at' not in validated_data:
-            validated_data['expires_at'] = timezone.now() + timedelta(days=7)
-        return super().create(validated_data)
+        model = QuizSubmission
+        fields = ['id', 'user', 'quiz', 'quiz_title', 'joined_at', 'score', 'score_before_regrade', 'state', 'has_seen_results', 'started_at', 'finished_at', 'end_at', 'time_spent']
+        read_only_fields = ['user', 'joined_at', 'time_spent']
 
 
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ['user', 'quiz', 'question', 'choice', 'is_correct']
-        read_only_fields = ['user', 'is_correct']
+        fields = ['submission', 'question', 'choice', 'is_correct']
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        return super().create(validated_data)
+        # Remove 'user' from validated_data if it exists
+        validated_data.pop('user', None)
+        return Answer.objects.create(**validated_data)

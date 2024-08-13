@@ -1,9 +1,8 @@
+import uuid
 from django.contrib.auth.models import AbstractUser
-from django.utils import timezone
 from django.db import models
 from django.conf import settings
-from .choices import question_type
-from .utils import default_expiration, generate_invitation_code
+from .choices import question_type, quiz_state
 
 
 class CustomUser(AbstractUser):
@@ -18,6 +17,7 @@ class CustomUser(AbstractUser):
 
 
 class Quiz(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     password = models.CharField(max_length=50, blank=True, null=True)
@@ -47,39 +47,33 @@ class Choice(models.Model):
         return self.content
 
 
-class UserQuiz(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+class QuizSubmission(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
     joined_at = models.DateTimeField(auto_now_add=True)
-    score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    completed = models.BooleanField(default=False)
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+    end_at = models.DateTimeField(null=True, blank=True)
+    time_spent = models.IntegerField(null=True, blank=True)
+
+    score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    score_before_regrade = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    state = models.CharField(choices=quiz_state, max_length=14)
+    has_seen_results = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.quiz.title}"
-
+        return f"[{self.state}] {self.quiz.title} - {self.user.email} ({self.score})"
+    
 
 class Answer(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    submission = models.ForeignKey(QuizSubmission, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice = models.ForeignKey(Choice, on_delete=models.CASCADE, null=True, blank=True)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
     is_correct = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.email} - {self.quiz.title} - {self.question.content}"
     
-
-class QuizInvitation(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    code = models.CharField(max_length=8, unique=True, default=generate_invitation_code)
-    expires_at = models.DateTimeField(default=default_expiration)
-    max_joins = models.IntegerField(default=1)
-    join_count = models.IntegerField(default=0)
-
-    def is_valid(self):
-        return self.join_count < self.max_joins and timezone.now() < self.expires_at
-
-    def __str__(self):
-        return f"{self.quiz.title} - {self.code}"
