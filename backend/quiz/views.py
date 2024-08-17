@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -99,6 +100,19 @@ class ChoiceDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class JoinQuizView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, quiz_id):
+        try:
+            quiz = Quiz.objects.get(id=quiz_id)
+            return Response({
+                'title': quiz.title,
+                'description': quiz.description,
+                'has_password': quiz.password != "",
+                'start_time': quiz.start_time,
+                'duration': quiz.duration
+            }, status=status.HTTP_200_OK)
+        except Quiz.DoesNotExist:
+            return Response({'error': 'Invalid invitation link'}, status=status.HTTP_404_NOT_FOUND)
+
     def post(self, request, quiz_id):
         try:
             quiz = Quiz.objects.get(id=quiz_id)
@@ -118,6 +132,24 @@ class JoinQuizView(APIView):
                 return Response({'message': 'Already joined this quiz'}, status=status.HTTP_200_OK)
         except Quiz.DoesNotExist:
             return Response({'error': 'Invalid invitation link'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class StartSubmissionSessionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, quiz_id, submission_id):
+        try:
+            submission = QuizSubmission.objects.get(id=submission_id, quiz=quiz_id, user=request.user)
+            if submission.started_at:
+                return Response({'error': 'You already started this quiz'}, status=status.HTTP_400_BAD_REQUEST)
+
+            submission.started_at = datetime.now()
+            submission.end_at = submission.started_at + submission.quiz.duration
+            submission.save()
+
+            return Response({'message': 'Quiz session started successfully', 'end_at': submission.end_at}, status=status.HTTP_200_OK)
+        except QuizSubmission.DoesNotExist:
+            return Response({'error': 'You have not joined this quiz or invalid link.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class QuizSubmissionView(APIView):
@@ -160,7 +192,7 @@ class QuizSubmissionView(APIView):
                     answer_instance.is_correct = False
                 answer_instance.save()
 
-                return Response({'message': 'Submitted successfully', 'is_correct': answer_instance.is_correct}, status=status.HTTP_200_OK)
+                return Response({'message': 'Submitted successfully'}, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
