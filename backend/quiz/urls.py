@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ChoiceDetailsView, ChoiceView, CreatedQuizzesView, JoinQuizView, QuestionDetailsView, QuestionView, QuizCreateView, QuizDetailView, RegisterView, CustomTokenObtainPairView, QuizSubmissionView, StartSubmissionSessionView, TakenQuizzesView, UserProfileView, QuizSubmissionGetView
+from .views import ChoiceDetailsView, ChoiceView, CreatedQuizzesView, JoinQuizView, QuestionDetailsView, QuestionView, QuizCreateView, QuizDetailView, QuizQuestions, RegisterView, CustomTokenObtainPairView, QuizSubmissionView, StartSubmissionSessionView, TakenQuizzesView, UserProfileView, QuizSubmissionGetView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -17,9 +17,8 @@ urlpatterns = [
     path('question/<int:question_id>/choice/<int:pk>/', ChoiceDetailsView.as_view(), name='choice-detail'),
 
     path('quiz/<uuid:quiz_id>/join/', JoinQuizView.as_view(), name='join-quiz'),
-
-    path('quiz/<uuid:quiz_id>/submit/<uuid:submission_id>/start-session/', StartSubmissionSessionView.as_view(), name='start-submission-session'),
-
+    path('quiz/<uuid:quiz_id>/submit/<uuid:submission_id>/start/', StartSubmissionSessionView.as_view(), name='start-submission-session'),
+    path('quiz/<uuid:quiz_id>/submit/<uuid:submission_id>/questions/', QuizQuestions.as_view(), name='show-quiz-question'),
     path('quiz/<uuid:quiz_id>/submit/<uuid:submission_id>/', QuizSubmissionView.as_view(), name='submit-answer'),
     
     path('quiz/created/', CreatedQuizzesView.as_view(), name='created-quizzes'),

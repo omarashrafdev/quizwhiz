@@ -1,10 +1,11 @@
 from datetime import datetime
+from django.http import JsonResponse
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Answer, Choice, CustomUser, Question, Quiz, QuizSubmission
-from .serializers import AnswerSerializer, ChoiceSerializer, QuestionSerializer, QuizListSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, QuizSubmissionSerializer, UserSerializer, QuizSerializer
+from .serializers import AnswerSerializer, ChoiceSerializer, QuestionSerializer, QuizListSerializer, QuizQuestionSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, QuizSubmissionSerializer, UserSerializer, QuizSerializer
 from .permissions import IsCreator
 
 
@@ -152,6 +153,21 @@ class StartSubmissionSessionView(APIView):
             return Response({'error': 'You have not joined this quiz or invalid link.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+class QuizQuestions(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, quiz_id, submission_id):
+        try:
+            submission = QuizSubmission.objects.get(id=submission_id, quiz=quiz_id, user=request.user)
+        except QuizSubmission.DoesNotExist:
+            return Response({'error': 'You have not joined this quiz or invalid link.'}, status=status.HTTP_404_NOT_FOUND)
+
+        questions = Question.objects.filter(quiz=quiz_id)
+        serializer = QuizQuestionSerializer(questions, many=True)
+        return Response({'questions': serializer.data}, status=status.HTTP_200_OK)
+
+
+
 class QuizSubmissionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -210,7 +226,6 @@ class TakenQuizzesView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Assuming there's a model to track taken quizzes
         taken_quizzes = QuizSubmission.objects.filter(user=self.request.user).values_list('quiz', flat=True)
         return Quiz.objects.filter(id__in=taken_quizzes)
 

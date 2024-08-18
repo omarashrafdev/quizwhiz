@@ -95,3 +95,9 @@ class AnswerSerializer(serializers.ModelSerializer):
         # Remove 'user' from validated_data if it exists
         validated_data.pop('user', None)
         return Answer.objects.create(**validated_data)
+
+
+class QuizQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        exclude = ['correct_choice']
