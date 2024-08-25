@@ -5,14 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react"
+import { jwtDecode } from "jwt-decode";
 
 import {
     Alert,
     AlertTitle,
 } from "@/components/ui/alert"
+import { useAuth } from "@/components/providers/AuthProvider";
+import { User } from "@/lib/types";
 
 const formSchema = z.object({
     email: z.string().email("Invalid email address."),
@@ -20,7 +23,16 @@ const formSchema = z.object({
 });
 
 export default function Login() {
-    const navigate = useNavigate()
+    const { user, login } = useAuth()
+
+    useEffect(() => {
+        console.log("user is", user)
+        if (user) {
+            return navigate("/")
+        }
+    }, [user])
+
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [loginErr, setLoginErr] = useState<string | null>(null)
 
@@ -56,7 +68,24 @@ export default function Login() {
             if (data.access) {
                 setLoading(false);
                 setLoginErr(null);
-                // TODO: Store user data
+                const decoded: {
+                    email: string,
+                    exp: number,
+                    iat: number,
+                    jti: string,
+                    name: string,
+                    token_type: string,
+                    user_id: number,
+                    username: string
+                } = jwtDecode(data.access);
+
+                let user: User = {
+                    id: decoded.user_id,
+                    name: decoded.name,
+                    email: decoded.email,
+                    username: decoded.username
+                }
+                login({ user: user, token: data.access })
                 return navigate("/")
             }
         }).catch((err) => {

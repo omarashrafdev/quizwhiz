@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 const formSchema = z.object({
     name: z.string().min(2, "Full name must be at least 6 characters."),
@@ -28,7 +29,16 @@ const formSchema = z.object({
 });
 
 export default function Register() {
+    const { user } = useAuth()
     const navigate = useNavigate();
+
+    useEffect(() => {
+        console.log("user is", user)
+        if (user) {
+            return navigate("/")
+        }
+    }, [user])
+
     const [loading, setLoading] = useState(false);
     const [registerErr, setRegisterErr] = useState<string | null>(null);
 
@@ -85,7 +95,7 @@ export default function Register() {
         <div className="flex justify-center items-center min-h-[85dvh] w-full my-4">
             <Card className="xl:w-6/12 md:w-10/12 sm:w-11/12 p-5">
                 <CardHeader>
-                    <span className="text-3xl">Login to QuizWhiz</span>
+                    <span className="text-3xl">Register to QuizWhiz</span>
                 </CardHeader>
                 <CardContent>
                     {registerErr && (

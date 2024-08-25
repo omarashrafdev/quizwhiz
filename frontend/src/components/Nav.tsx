@@ -1,12 +1,30 @@
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ModeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
+import { useAuth } from "./providers/AuthProvider";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Nav({
     className,
     ...props
 }: React.HTMLAttributes<HTMLElement>) {
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
     return (
         <nav
             className={cn(
@@ -30,9 +48,30 @@ export function Nav({
                 </Link>
             </div>
             <div className="flex items-center space-x-4">
-                <Button size={"sm"} asChild>
-                    <Link to="/login">login</Link>
-                </Button>
+                {user ? (
+                    <Avatar>
+                        <AvatarFallback>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger>
+                                    {user.name[0]}
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleLogout}>
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </AvatarFallback>
+                    </Avatar>
+                ) : (
+                    <Button size={"sm"} asChild>
+                        <Link to="/login">login</Link>
+                    </Button>
+                )}
                 <ModeToggle />
             </div>
         </nav>
