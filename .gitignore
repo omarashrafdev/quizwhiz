@@ -1,3 +1,4 @@
 .vscode/
+backend/.venv/
 backend/quiz/__pycache__/
 backend/quiz/migrations/

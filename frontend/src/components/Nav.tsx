@@ -12,6 +12,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Logo from "./Logo";
 
 export function Nav({
     className,
@@ -34,6 +35,7 @@ export function Nav({
             {...props}
         >
             <div className="flex items-center space-x-5">
+                <Logo />
                 <Link
                     to="/"
                     className="text-sm font-medium transition-colors hover:text-primary"
