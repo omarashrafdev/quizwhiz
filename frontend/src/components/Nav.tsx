@@ -48,6 +48,14 @@ export function Nav({
                 >
                     About
                 </Link>
+                {user && (
+                    <Link
+                        to="/dashboard"
+                        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                    >
+                        Dashboard
+                    </Link>
+                )}
             </div>
             <div className="flex items-center space-x-4">
                 {user ? (
