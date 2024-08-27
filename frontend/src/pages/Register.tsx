@@ -28,6 +28,14 @@ const formSchema = z.object({
     }
 });
 
+type RegisterFormValues = {
+    name: string;
+    email: string;
+    username: string;
+    password1: string,
+    password2: string,
+};
+
 export default function Register() {
     const { user } = useAuth()
     const navigate = useNavigate();
@@ -47,11 +55,11 @@ export default function Register() {
         handleSubmit,
         setError,
         formState: { errors },
-    } = useForm({
+    } = useForm<RegisterFormValues>({
         resolver: zodResolver(formSchema),
     });
 
-    const onSubmit = async (data: { name: string; email: string; username: string; password1: string }) => {
+    const onSubmit = async (data: RegisterFormValues) => {
         setLoading(true);
         setRegisterErr(null);
         try {

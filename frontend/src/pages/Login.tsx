@@ -22,46 +22,45 @@ const formSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
+type LoginFormValues = {
+    email: string;
+    password: string;
+};
+
 export default function Login() {
-    const { user, login } = useAuth()
-
-    useEffect(() => {
-        console.log("user is", user)
-        if (user) {
-            return navigate("/")
-        }
-    }, [user])
-
+    const { user, login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [loginErr, setLoginErr] = useState<string | null>(null)
+    const [loginErr, setLoginErr] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user) {
+            navigate("/");
+        }
+    }, [user, navigate]);
 
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm({
+    } = useForm<LoginFormValues>({
         resolver: zodResolver(formSchema),
     });
 
-    const onSubmit = async (data: { email: string, password: string }) => {
+    const onSubmit = async (data: LoginFormValues) => {
         setLoading(true);
         await fetch(
             `${import.meta.env.VITE_API_KEY}/login/`,
-
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json; charset=UTF-8",
                 },
-                body: JSON.stringify({
-                    "email": data.email,
-                    "password": data.password
-                })
+                body: JSON.stringify(data)
             }
         ).then((res => res.json())).then((data) => {
             if (data.detail) {
-                setLoginErr(data.detail)
+                setLoginErr(data.detail);
                 setLoading(false);
             }
 
@@ -84,14 +83,14 @@ export default function Login() {
                     name: decoded.name,
                     email: decoded.email,
                     username: decoded.username
-                }
-                login({ user: user, token: data.access })
-                return navigate("/")
+                };
+                login({ user: user, token: data.access });
+                navigate("/");
             }
         }).catch((err) => {
-            setLoginErr(err)
+            setLoginErr(err.toString());
             setLoading(false);
-        })
+        });
     };
 
     return (
@@ -116,8 +115,10 @@ export default function Login() {
                                 placeholder="Your email"
                                 {...register("email")}
                             />
-                            {errors.email && (
-                                <p className="text-red-500 text-sm pt-1">{errors.email.message}</p>
+                            {errors.email?.message && (
+                                <p className="text-red-500 text-sm pt-1">
+                                    {errors.email.message as string}
+                                </p>
                             )}
                         </div>
                         <div>
@@ -128,8 +129,10 @@ export default function Login() {
                                 placeholder="Your password"
                                 {...register("password")}
                             />
-                            {errors.password && (
-                                <p className="text-red-500 text-sm pt-1">{errors.password.message}</p>
+                            {errors.password?.message && (
+                                <p className="text-red-500 text-sm pt-1">
+                                    {errors.password.message as string}
+                                </p>
                             )}
                         </div>
                         <Button type="submit" className="w-full" disabled={loading}>
@@ -137,20 +140,11 @@ export default function Login() {
                         </Button>
                     </form>
                 </CardContent>
-                <CardFooter
-                    className="flex flex-row justify-between text-gray-500"
-                >
-                    <Link
-                        className="hover:underline"
-                        to="/register"
-                    >
+                <CardFooter className="flex flex-row justify-between text-gray-500">
+                    <Link className="hover:underline" to="/register">
                         Create a new account
                     </Link>
-
-                    <Link
-                        className="hover:underline"
-                        to="/forget-password"
-                    >
+                    <Link className="hover:underline" to="/forget-password">
                         Forget password
                     </Link>
                 </CardFooter>
