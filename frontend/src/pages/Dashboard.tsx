@@ -9,12 +9,28 @@ import {
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 
+type Quiz = {
+    id: string;
+    title: string;
+    questions: { length: number }[];
+};
+
+type QuizSubmission = {
+    quiz: Quiz;
+    score: number;
+};
+
+type QuizzesState = {
+    created: Quiz[];
+    participated: QuizSubmission[];
+};
+
+
 export default function Dashboard() {
     const { token } = useAuth();
-    const [quizzes, setQuizzes] = useState({
-        created: [
-
-        ], participated: []
+    const [quizzes, setQuizzes] = useState<QuizzesState>({
+        created: [],
+        participated: [],
     });
 
     const getQuizzes = async () => {
@@ -24,7 +40,7 @@ export default function Dashboard() {
                     "Authorization": `Bearer ${token}`,
                 },
             });
-            const data = await response.json();
+            const data: QuizzesState = await response.json();
             setQuizzes(data);
         } catch (error) {
             console.error("Error fetching quizzes:", error);
@@ -38,7 +54,6 @@ export default function Dashboard() {
     return (
         <div className="w-full my-10">
             <div>
-                {/* <h1 className="text-4xl font-bold mb-6">Dashboard</h1> */}
                 <div>
                     <h2 className="text-2xl font-bold mb-2">Created Quizzes</h2>
                     <Table>
@@ -88,7 +103,7 @@ export default function Dashboard() {
                                     <TableRow key={index}>
                                         <TableCell>{submission.quiz.title}</TableCell>
                                         <TableCell>{submission.quiz.questions.length}</TableCell>
-                                        <TableCell>{submission.quiz.score}</TableCell>
+                                        <TableCell>{submission.score}</TableCell>
                                     </TableRow>
                                 )))
                             }
