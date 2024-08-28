@@ -1,4 +1,5 @@
 import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
@@ -8,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type Quiz = {
     id: string;
@@ -27,6 +29,7 @@ type QuizzesState = {
 
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const { token } = useAuth();
     const [quizzes, setQuizzes] = useState<QuizzesState>({
         created: [],
@@ -51,65 +54,70 @@ export default function Dashboard() {
         getQuizzes();
     }, []);
 
+    const addQuiz = () => {
+        navigate("/dashboard/add-quiz")
+    }
+
     return (
         <div className="w-full my-10">
             <div>
-                <div>
+                <div className="flex flex-row justify-between">
                     <h2 className="text-2xl font-bold mb-2">Created Quizzes</h2>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Number of questions</TableHead>
-                                <TableHead>Submissions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {quizzes.created.length === 0 ? (
-                                <TableRow>
-                                    <TableCell className="text-center" colSpan={3}>You haven't created a quiz yet.</TableCell>
-                                </TableRow>
-                            ) :
-                                (
-                                    quizzes.created.map((quiz, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{quiz.title}</TableCell>
-                                            <TableCell>{quiz.questions.length}</TableCell>
-                                            <TableCell>0</TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                        </TableBody>
-                    </Table>
+                    <Button onClick={addQuiz}>Add quiz</Button>
                 </div>
-                <br />
-                <div>
-                    <h2 className="text-2xl font-bold mb-2">Quizzes Taken</h2>
-                    <Table>
-                        <TableHeader>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Number of questions</TableHead>
+                            <TableHead>Submissions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {quizzes.created.length === 0 ? (
                             <TableRow>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Number of questions</TableHead>
-                                <TableHead>Score</TableHead>
+                                <TableCell className="text-center" colSpan={3}>You haven't created a quiz yet.</TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {quizzes.participated.length === 0 ? (
-                                <TableRow>
-                                    <TableCell className="text-center" colSpan={3}>You haven't took any quiz yet.</TableCell>
-                                </TableRow>
-                            ) :
-                                (quizzes.participated.map((submission, index) => (
+                        ) :
+                            (
+                                quizzes.created.map((quiz, index) => (
                                     <TableRow key={index}>
-                                        <TableCell>{submission.quiz.title}</TableCell>
-                                        <TableCell>{submission.quiz.questions.length}</TableCell>
-                                        <TableCell>{submission.score}</TableCell>
+                                        <TableCell>{quiz.title}</TableCell>
+                                        <TableCell>{quiz.questions.length}</TableCell>
+                                        <TableCell>0</TableCell>
                                     </TableRow>
-                                )))
-                            }
-                        </TableBody>
-                    </Table>
-                </div>
+                                ))
+                            )}
+                    </TableBody>
+                </Table>
+            </div>
+            <br />
+            <div>
+                <h2 className="text-2xl font-bold mb-2">Quizzes Taken</h2>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Number of questions</TableHead>
+                            <TableHead>Score</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {quizzes.participated.length === 0 ? (
+                            <TableRow>
+                                <TableCell className="text-center" colSpan={3}>You haven't took any quiz yet.</TableCell>
+                            </TableRow>
+                        ) :
+                            (quizzes.participated.map((submission, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{submission.quiz.title}</TableCell>
+                                    <TableCell>{submission.quiz.questions.length}</TableCell>
+                                    <TableCell>{submission.score}</TableCell>
+                                </TableRow>
+                            )))
+                        }
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );

@@ -6,6 +6,7 @@ import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import AddQuiz from './pages/AddQuiz'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path='*' element={<NotFound />} />
         <Route path='/dashboard' element={<PrivateRoute />} >
           <Route index element={<Dashboard />} />
+          <Route path='add-quiz' element={<AddQuiz />} />
         </Route>
         <Route path='/profile' element={<PrivateRoute />} >
           <Route index element={<h1>Profile</h1>} />
