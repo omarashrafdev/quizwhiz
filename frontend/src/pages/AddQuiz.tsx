@@ -55,7 +55,7 @@ export default function AddQuiz() {
     const onSubmit = async (data: QuizFormType) => {
         const quizData = {
             ...data,
-            duration: data.duration ? Number(data.duration) : null,
+            duration: data.duration ? Number(data.duration) * 60 : null,
         };
         setLoading(true);
         try {
@@ -73,7 +73,7 @@ export default function AddQuiz() {
             if (response.status === 201) {
                 const result = await response.json();
                 console.log(result);
-                navigate("/dashboard");
+                navigate(`/dashboard/quiz/${result.id}/questions`);
             } else {
                 const result = await response.json();
                 console.log(result);

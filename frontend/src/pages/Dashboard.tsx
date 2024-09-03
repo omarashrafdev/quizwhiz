@@ -9,7 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 type Quiz = {
     id: string;
@@ -62,7 +62,7 @@ export default function Dashboard() {
         <div className="w-full my-10">
             <div>
                 <div className="flex flex-row justify-between">
-                    <h2 className="text-2xl font-bold mb-2">Created Quizzes</h2>
+                    <h2 className="text-2xl font-bold mb-2">Created Quizzes - {quizzes.created?.length}</h2>
                     <Button onClick={addQuiz}>Add quiz</Button>
                 </div>
                 <Table>
@@ -71,6 +71,7 @@ export default function Dashboard() {
                             <TableHead>Title</TableHead>
                             <TableHead>Number of questions</TableHead>
                             <TableHead>Submissions</TableHead>
+                            <TableHead></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -85,6 +86,14 @@ export default function Dashboard() {
                                         <TableCell>{quiz.title}</TableCell>
                                         <TableCell>{quiz.questions.length}</TableCell>
                                         <TableCell>0</TableCell>
+                                        <TableCell>
+                                            <Link
+                                                to={"/dashboard/quiz/" + quiz.id}
+                                                className="underline"
+                                            >
+                                                View
+                                            </Link>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             )}
@@ -93,7 +102,7 @@ export default function Dashboard() {
             </div>
             <br />
             <div>
-                <h2 className="text-2xl font-bold mb-2">Quizzes Taken</h2>
+                <h2 className="text-2xl font-bold mb-2">Quizzes Taken - {quizzes.participated?.length}</h2>
                 <Table>
                     <TableHeader>
                         <TableRow>
