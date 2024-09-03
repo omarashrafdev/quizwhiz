@@ -74,13 +74,13 @@ export default function Dashboard() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {quizzes.created.length === 0 ? (
+                        {quizzes.created?.length === 0 ? (
                             <TableRow>
                                 <TableCell className="text-center" colSpan={3}>You haven't created a quiz yet.</TableCell>
                             </TableRow>
                         ) :
                             (
-                                quizzes.created.map((quiz, index) => (
+                                quizzes.created?.map((quiz, index) => (
                                     <TableRow key={index}>
                                         <TableCell>{quiz.title}</TableCell>
                                         <TableCell>{quiz.questions.length}</TableCell>
@@ -103,12 +103,12 @@ export default function Dashboard() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {quizzes.participated.length === 0 ? (
+                        {quizzes.participated?.length === 0 ? (
                             <TableRow>
                                 <TableCell className="text-center" colSpan={3}>You haven't took any quiz yet.</TableCell>
                             </TableRow>
                         ) :
-                            (quizzes.participated.map((submission, index) => (
+                            (quizzes.participated?.map((submission, index) => (
                                 <TableRow key={index}>
                                     <TableCell>{submission.quiz.title}</TableCell>
                                     <TableCell>{submission.quiz.questions.length}</TableCell>
