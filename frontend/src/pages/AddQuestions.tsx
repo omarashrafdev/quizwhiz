@@ -1,6 +1,6 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export default function AddQuestions() {
     const [quiz, setQuiz] = useState<Quiz | null>(null);
     const [newQuestions, setNewQuestions] = useState<Question[]>([]);
     const [hidden, setHidden] = useState(true);
+    const navigate = useNavigate();
 
     const getQuizDetails = async () => {
         try {
@@ -172,6 +173,7 @@ export default function AddQuestions() {
             }
 
             alert("Questions and choices saved successfully!");
+            navigate(`/dashboard/quiz/${id}`);
         } catch (error) {
             console.error("Error saving questions:", error);
             alert("An error occurred while saving the questions.");
