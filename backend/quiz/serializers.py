@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
+from django.utils.dateparse import parse_datetime
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Answer, Choice, CustomUser, Question, Quiz, QuizSubmission
 
@@ -59,6 +60,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         read_only_fields = ['quiz']
 
 class QuizSerializer(serializers.ModelSerializer):
+    start_time = serializers.DateTimeField(required=False,format="%Y-%m-%dT%H:%M:%S.%fZ", input_formats=["%Y-%m-%dT%H:%M:%S.%fZ", "iso-8601"], allow_null=True)
     questions = QuestionSerializer(many=True, read_only=True)
 
     class Meta:
@@ -71,6 +73,14 @@ class QuizSerializer(serializers.ModelSerializer):
         user = request.user
         validated_data['creator'] = user
         return super().create(validated_data)
+    
+    # def validate_start_time(self, value):
+    #     if value is None:
+    #         return None
+    #     parsed_time = parse_datetime(value.isoformat())
+    #     if parsed_time is None:
+    #         raise serializers.ValidationError("Invalid date format")
+    #     return parsed_time
 
 class QuizListSerializer(serializers.ModelSerializer):
     class Meta:

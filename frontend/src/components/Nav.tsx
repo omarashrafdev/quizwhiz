@@ -48,7 +48,7 @@ export function Nav({
                 >
                     About
                 </Link>
-                {user && (
+                {(user) && (
                     <Link
                         to="/dashboard"
                         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
@@ -58,7 +58,7 @@ export function Nav({
                 )}
             </div>
             <div className="flex items-center space-x-4">
-                {user ? (
+                {(user) ? (
                     <Avatar>
                         <AvatarFallback>
                             <DropdownMenu>

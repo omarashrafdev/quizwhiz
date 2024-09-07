@@ -101,9 +101,11 @@ export default function Quiz() {
                     </Button>
                 </div>
             </div>
-            <p>
-                <b>Description:</b> {quiz.description}
-            </p>
+            {quiz.description && (
+                <p>
+                    <b>Description:</b> {quiz.description}
+                </p>
+            )}
             <p>
                 <b>Duration:</b> {quiz.duration || "No specific duration set."}
             </p>
@@ -111,21 +113,25 @@ export default function Quiz() {
                 <b>Start Time:</b>{" "}
                 {quiz.start_time ? new Date(quiz.start_time).toLocaleString() : "No specific time set."}
             </p>
-            <div className="flex flex-row">
-                <p>
-                    <b>Password:</b>{" "}
-                    <span>
-                        {hidden ? "•".repeat(quiz.password.length) : quiz.password}
-                    </span>
-                </p>
-                <div className="ml-1">
-                    {hidden ? (
-                        <Eye onClick={handleShowPassword} />
-                    ) : (
-                        <EyeOff onClick={handleShowPassword} />
-                    )}
+            {quiz?.password && (
+                <div className="flex flex-row">
+                    <p>
+                        <b className="mr-1">Password:</b>
+                        <span>
+                            {hidden
+                                ? "•".repeat(quiz?.password.length || 0)
+                                : quiz?.password}
+                        </span>
+                    </p>
+                    <div className="ml-1">
+                        {hidden ? (
+                            <Eye onClick={handleShowPassword} />
+                        ) : (
+                            <EyeOff onClick={handleShowPassword} />
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             <h3 className="text-2xl mt-5 mb-2">Questions</h3>
             {quiz.questions.map((question, index) => (

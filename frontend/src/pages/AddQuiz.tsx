@@ -35,7 +35,7 @@ const quizSchema = z.object({
     description: z.string().optional(),
     password: z.string().optional(),
     startTime: z.date().optional(),
-    duration: z.number().optional(),
+    duration: z.string().optional(),
 });
 
 type QuizFormType = z.infer<typeof quizSchema>;
@@ -53,10 +53,6 @@ export default function AddQuiz() {
     });
 
     const onSubmit = async (data: QuizFormType) => {
-        const quizData = {
-            ...data,
-            duration: data.duration ? Number(data.duration) * 60 : null,
-        };
         setLoading(true);
         try {
             const response = await fetch(
@@ -67,12 +63,17 @@ export default function AddQuiz() {
                         "Content-Type": "application/json; charset=UTF-8",
                         "Authorization": `Bearer ${token}`,
                     },
-                    body: JSON.stringify(quizData),
+                    body: JSON.stringify({
+                        "title": data.title,
+                        "description": data.description,
+                        "password": data.password,
+                        "start_time": data.startTime,
+                        "duration": data.duration ? Number(data.duration) * 60 : null
+                    }),
                 }
             );
             if (response.status === 201) {
                 const result = await response.json();
-                console.log(result);
                 navigate(`/dashboard/quiz/${result.id}/questions`);
             } else {
                 const result = await response.json();
@@ -107,11 +108,11 @@ export default function AddQuiz() {
                                     id="title"
                                     type="text"
                                     placeholder="Title"
-                                    {...form.register("title")}
                                     className="mt-1"
+                                    {...form.register("title")}
                                 />
                                 {form.formState.errors.title && (
-                                    <p className="text-red-600 pt-1">
+                                    <p className="text-red-600 pt-2">
                                         {form.formState.errors.title.message}
                                     </p>
                                 )}
@@ -123,8 +124,8 @@ export default function AddQuiz() {
                                     id="description"
                                     type="text"
                                     placeholder="Description (Optional)"
-                                    {...form.register("description")}
                                     className="mt-1"
+                                    {...form.register("description")}
                                 />
                             </div>
 
@@ -134,8 +135,8 @@ export default function AddQuiz() {
                                     id="password"
                                     type="text"
                                     placeholder="Password (Optional)"
-                                    {...form.register("password")}
                                     className="mt-1"
+                                    {...form.register("password")}
                                 />
                             </div>
 
@@ -193,10 +194,8 @@ export default function AddQuiz() {
                                     min="1"
                                     max="180"
                                     placeholder="Duration (Optional)"
-                                    {...form.register("duration", {
-                                        valueAsNumber: true,
-                                    })}
                                     className="mt-1"
+                                    {...form.register("duration")}
                                 />
                             </div>
                             <Button type="submit" className="w-full" disabled={loading}>
