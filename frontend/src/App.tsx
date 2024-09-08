@@ -10,6 +10,7 @@ import AddQuiz from './pages/AddQuiz'
 import AddQuestions from './pages/AddQuestions'
 import Quiz from './pages/Quiz'
 import EditQuiz from './pages/EditQuiz'
+import EditQuestion from './pages/EditQuestion'
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path='quiz/:id/' element={<Quiz />} />
           <Route path='quiz/:id/edit' element={<EditQuiz />} />
           <Route path='quiz/:id/questions' element={<AddQuestions />} />
+          <Route path='quiz/:id/edit-question/:questionId' element={<EditQuestion />} />
         </Route>
         <Route path='/profile' element={<PrivateRoute />} >
           <Route index element={<h1>Profile</h1>} />

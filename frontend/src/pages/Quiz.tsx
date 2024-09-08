@@ -78,6 +78,29 @@ export default function Quiz() {
         navigate(`/dashboard/quiz/${id}/edit`);
     };
 
+    const handleEditQuestion = (questionId: string) => {
+        navigate(`/dashboard/quiz/${id}/edit-question/${questionId}`);
+    };
+
+    const handleDeleteQuestion = async (questionId: string) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_KEY}/quiz/${id}/question/${questionId}/`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.ok) {
+                alert("Question deleted successfully!");
+                getQuizDetails(); // Refresh the quiz details
+            } else {
+                console.error("Failed to delete question.");
+            }
+        } catch (error) {
+            console.error("Error deleting question:", error);
+        }
+    };
+
     useEffect(() => {
         getQuizDetails();
     }, [id]);
@@ -95,11 +118,11 @@ export default function Quiz() {
             <div className="flex flex-row justify-between">
                 <h2 className="text-3xl font-bold mb-2 dark:text-white">{quiz.title}</h2>
                 <div>
-                    <Button onClick={handleEditQuiz} className="mr-2">
-                        <Pencil className="mr-1" /> Edit Quiz
+                    <Button size="icon" onClick={handleEditQuiz} className="mr-2">
+                        <Pencil />
                     </Button>
-                    <Button variant="destructive" onClick={handleDeleteQuiz}>
-                        <Trash className="mr-1" /> Delete Quiz
+                    <Button size="icon" variant="destructive" onClick={handleDeleteQuiz}>
+                        <Trash />
                     </Button>
                 </div>
             </div>
@@ -141,8 +164,16 @@ export default function Quiz() {
             <h3 className="text-3xl mt-5 mb-2 dark:text-white">Questions</h3>
             {quiz.questions.map((question, index) => (
                 <Card key={question.id} className="mb-4 bg-gray-50 dark:bg-gray-800">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row justify-between">
                         <h4 className="text-xl dark:text-white">Question {index + 1}</h4>
+                        <div>
+                            <Button size="icon" className="mr-2" onClick={() => handleEditQuestion(question.id)}>
+                                <Pencil />
+                            </Button>
+                            <Button size="icon" variant="destructive" onClick={() => handleDeleteQuestion(question.id)}>
+                                <Trash />
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <p className="mb-2 text-lg font-bold dark:text-gray-300">{question.content}</p>
