@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Pencil, Trash } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 type Quiz = {
     id: string;
@@ -63,7 +65,7 @@ export default function Quiz() {
             });
             if (response.ok) {
                 alert("Quiz deleted successfully!");
-                navigate("/dashboard"); // Navigate back to the quiz list page
+                navigate("/dashboard");
             } else {
                 console.error("Failed to delete quiz.");
             }
@@ -72,8 +74,8 @@ export default function Quiz() {
         }
     };
 
-    const handleEditQuiz = async () => {
-        navigate(`/dashboard/quiz/${id}/edit`); // Redirect to the edit quiz page
+    const handleEditQuiz = () => {
+        navigate(`/dashboard/quiz/${id}/edit`);
     };
 
     useEffect(() => {
@@ -85,13 +87,13 @@ export default function Quiz() {
     };
 
     if (!quiz) {
-        return <div>Loading...</div>;
+        return <div className="text-center text-lg">Loading...</div>;
     }
 
     return (
-        <div className="w-full my-10">
+        <div className="w-full my-10 px-4">
             <div className="flex flex-row justify-between">
-                <h2 className="text-3xl font-bold mb-2">{quiz.title}</h2>
+                <h2 className="text-3xl font-bold mb-2 dark:text-white">{quiz.title}</h2>
                 <div>
                     <Button onClick={handleEditQuiz} className="mr-2">
                         <Pencil className="mr-1" /> Edit Quiz
@@ -102,19 +104,22 @@ export default function Quiz() {
                 </div>
             </div>
             {quiz.description && (
-                <p>
+                <p className="text-gray-700 dark:text-gray-300">
                     <b>Description:</b> {quiz.description}
                 </p>
             )}
-            <p>
-                <b>Duration:</b> {quiz.duration || "No specific duration set."}
+            <p className="text-gray-700 dark:text-gray-300">
+                <b>Duration:</b>{" "}
+                {quiz.duration
+                    ? `${quiz.duration.split(":")[0] === "00" ? "" : `${Number(quiz.duration.split(":")[0])}H `}${quiz.duration.split(":")[1] === "00" ? "" : `${Number(quiz.duration.split(":")[1])}M`}`
+                    : "No specific duration set."}
             </p>
-            <p>
+            <p className="text-gray-700 dark:text-gray-300">
                 <b>Start Time:</b>{" "}
                 {quiz.start_time ? new Date(quiz.start_time).toLocaleString() : "No specific time set."}
             </p>
             {quiz?.password && (
-                <div className="flex flex-row">
+                <div className="flex flex-row text-gray-700 dark:text-gray-300">
                     <p>
                         <b className="mr-1">Password:</b>
                         <span>
@@ -125,30 +130,51 @@ export default function Quiz() {
                     </p>
                     <div className="ml-1">
                         {hidden ? (
-                            <Eye onClick={handleShowPassword} />
+                            <Eye onClick={handleShowPassword} className="cursor-pointer dark:text-white" />
                         ) : (
-                            <EyeOff onClick={handleShowPassword} />
+                            <EyeOff onClick={handleShowPassword} className="cursor-pointer dark:text-white" />
                         )}
                     </div>
                 </div>
             )}
 
-            <h3 className="text-2xl mt-5 mb-2">Questions</h3>
+            <h3 className="text-3xl mt-5 mb-2 dark:text-white">Questions</h3>
             {quiz.questions.map((question, index) => (
-                <Card key={question.id} className="mb-4">
+                <Card key={question.id} className="mb-4 bg-gray-50 dark:bg-gray-800">
                     <CardHeader>
-                        <h4 className="text-xl">Question {index + 1}</h4>
+                        <h4 className="text-xl dark:text-white">Question {index + 1}</h4>
                     </CardHeader>
                     <CardContent>
-                        <p className="mb-2">{question.content}</p>
-                        <h5 className="font-bold">Choices:</h5>
-                        <ul>
+                        <p className="mb-2 text-lg font-bold dark:text-gray-300">{question.content}</p>
+                        <RadioGroup
+                            className="checked:text-green-700"
+                            defaultValue={question.correct_choice ? question.correct_choice : undefined}
+                        >
                             {question.choices.map((choice) => (
-                                <li key={choice.id} className={`mb-1 ${choice.id === question.correct_choice ? "text-green-600 font-bold" : ""}`}>
-                                    {choice.content}
-                                </li>
+                                <Card
+                                    key={choice.id}
+                                    className={`px-6 py-3 ${choice.id === question.correct_choice
+                                        ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
+                                        : "bg-white dark:bg-gray-700 text-black dark:text-gray-300"
+                                        }`}
+                                >
+                                    <div className="flex flex-row items-center">
+                                        <RadioGroupItem
+                                            disabled
+                                            value={choice.id}
+                                            id={choice.id}
+                                            className="dark:border-gray-600"
+                                        />
+                                        <Label
+                                            className="ml-2 dark:text-gray-300"
+                                            htmlFor={choice.id}
+                                        >
+                                            {choice.content}
+                                        </Label>
+                                    </div>
+                                </Card>
                             ))}
-                        </ul>
+                        </RadioGroup>
                     </CardContent>
                 </Card>
             ))}
