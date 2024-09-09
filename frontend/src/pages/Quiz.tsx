@@ -181,30 +181,33 @@ export default function Quiz() {
                             className="checked:text-green-700"
                             defaultValue={question.correct_choice ? question.correct_choice : undefined}
                         >
-                            {question.choices.map((choice) => (
-                                <Card
-                                    key={choice.id}
-                                    className={`px-6 py-3 ${choice.id === question.correct_choice
-                                        ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
-                                        : "bg-white dark:bg-gray-700 text-black dark:text-gray-300"
-                                        }`}
-                                >
-                                    <div className="flex flex-row items-center">
-                                        <RadioGroupItem
-                                            disabled
-                                            value={choice.id}
-                                            id={choice.id}
-                                            className="dark:border-gray-600"
-                                        />
-                                        <Label
-                                            className="ml-2 dark:text-gray-300"
-                                            htmlFor={choice.id}
-                                        >
-                                            {choice.content}
-                                        </Label>
-                                    </div>
-                                </Card>
-                            ))}
+                            {question.choices.map((choice) => {
+                                // console.log(question.correct_choice === choice.id)
+                                return (
+                                    <Card
+                                        key={choice.id}
+                                        className={`px-6 py-3 ${choice.id === question.correct_choice
+                                            ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
+                                            : "bg-white dark:bg-gray-700 text-black dark:text-gray-300"
+                                            }`}
+                                    >
+                                        <div className="flex flex-row items-center">
+                                            <RadioGroupItem
+                                                disabled
+                                                value={choice.id}
+                                                id={choice.id}
+                                                className="dark:border-gray-600"
+                                            />
+                                            <Label
+                                                className="ml-2 dark:text-gray-300"
+                                                htmlFor={choice.id}
+                                            >
+                                                {choice.content}
+                                            </Label>
+                                        </div>
+                                    </Card>
+                                )
+                            })}
                         </RadioGroup>
                     </CardContent>
                 </Card>

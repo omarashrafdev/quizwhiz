@@ -19,7 +19,7 @@ class CustomUser(AbstractUser):
 class Quiz(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True) 
     password = models.CharField(max_length=50, blank=True, null=True)
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     start_time = models.DateTimeField(null=True, blank=True)
@@ -33,7 +33,7 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, related_name='questions', on_delete=models.CASCADE)
     content = models.TextField()
     type = models.CharField(max_length=9, choices=question_type)
-    correct_choice = models.ForeignKey('Choice', on_delete=models.CASCADE, related_name='correct_choice', null=True, blank=True)
+    correct_choice = models.ForeignKey('Choice', on_delete=models.SET_NULL, related_name='correct_choice', null=True, blank=True)
 
     def __str__(self):
         return self.content
