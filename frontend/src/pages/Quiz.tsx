@@ -101,6 +101,10 @@ export default function Quiz() {
         }
     };
 
+    const handleAddQuestions = () => {
+        navigate(`/dashboard/quiz/${id}/questions`);
+    }
+
     useEffect(() => {
         getQuizDetails();
     }, [id]);
@@ -160,58 +164,65 @@ export default function Quiz() {
                     </div>
                 </div>
             )}
-
-            <h3 className="text-3xl mt-5 mb-2 dark:text-white">Questions</h3>
-            {quiz.questions.map((question, index) => (
-                <Card key={question.id} className="mb-4 bg-gray-50 dark:bg-gray-800">
-                    <CardHeader className="flex flex-row justify-between">
-                        <h4 className="text-xl dark:text-white">Question {index + 1}</h4>
-                        <div>
-                            <Button size="icon" className="mr-2" onClick={() => handleEditQuestion(question.id)}>
-                                <Pencil />
-                            </Button>
-                            <Button size="icon" variant="destructive" onClick={() => handleDeleteQuestion(question.id)}>
-                                <Trash />
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="mb-2 text-lg font-bold dark:text-gray-300">{question.content}</p>
-                        <RadioGroup
-                            className="checked:text-green-700"
-                            defaultValue={question.correct_choice ? question.correct_choice : undefined}
-                        >
-                            {question.choices.map((choice) => {
-                                // console.log(question.correct_choice === choice.id)
-                                return (
-                                    <Card
-                                        key={choice.id}
-                                        className={`px-6 py-3 ${choice.id === question.correct_choice
-                                            ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
-                                            : "bg-white dark:bg-gray-700 text-black dark:text-gray-300"
-                                            }`}
-                                    >
-                                        <div className="flex flex-row items-center">
-                                            <RadioGroupItem
-                                                disabled
-                                                value={choice.id}
-                                                id={choice.id}
-                                                className="dark:border-gray-600"
-                                            />
-                                            <Label
-                                                className="ml-2 dark:text-gray-300"
-                                                htmlFor={choice.id}
-                                            >
-                                                {choice.content}
-                                            </Label>
-                                        </div>
-                                    </Card>
-                                )
-                            })}
-                        </RadioGroup>
-                    </CardContent>
-                </Card>
-            ))}
+            <div className="flex flex-row justify-between">
+                <h3 className="text-3xl mt-5 mb-2 dark:text-white">Questions</h3>
+                <Button className="mr-2" onClick={() => handleAddQuestions()}>
+                    Add Questions
+                </Button>
+            </div>
+            {quiz.questions.length === 0 ? (
+                <p>No questions</p>
+            ) : (
+                quiz.questions.map((question, index) => (
+                    <Card key={question.id} className="mb-4 bg-gray-50 dark:bg-gray-800">
+                        <CardHeader className="flex flex-row justify-between">
+                            <h4 className="text-xl dark:text-white">Question {index + 1}</h4>
+                            <div>
+                                <Button size="icon" className="mr-2" onClick={() => handleEditQuestion(question.id)}>
+                                    <Pencil />
+                                </Button>
+                                <Button size="icon" variant="destructive" onClick={() => handleDeleteQuestion(question.id)}>
+                                    <Trash />
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="mb-2 text-lg font-bold dark:text-gray-300">{question.content}</p>
+                            <RadioGroup
+                                className="checked:text-green-700"
+                                defaultValue={question.correct_choice ? question.correct_choice : undefined}
+                            >
+                                {question.choices.map((choice) => {
+                                    // console.log(question.correct_choice === choice.id)
+                                    return (
+                                        <Card
+                                            key={choice.id}
+                                            className={`px-6 py-3 ${choice.id === question.correct_choice
+                                                ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
+                                                : "bg-white dark:bg-gray-700 text-black dark:text-gray-300"
+                                                }`}
+                                        >
+                                            <div className="flex flex-row items-center">
+                                                <RadioGroupItem
+                                                    disabled
+                                                    value={choice.id}
+                                                    id={choice.id}
+                                                    className="dark:border-gray-600"
+                                                />
+                                                <Label
+                                                    className="ml-2 dark:text-gray-300"
+                                                    htmlFor={choice.id}
+                                                >
+                                                    {choice.content}
+                                                </Label>
+                                            </div>
+                                        </Card>
+                                    )
+                                })}
+                            </RadioGroup>
+                        </CardContent>
+                    </Card>
+                )))}
         </div>
     );
 }
